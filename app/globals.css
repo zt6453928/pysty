@@ -1,26 +1,245 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* 魔法主题变量 */
+  --magic-glow: #a78bfa;
+  
+  /* Shadcn UI 变量 */
+  --background: 0 0% 100%;
+  --foreground: 0 0% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9%;
+  --primary: 262 83% 58%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 0 0% 9%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 0 0% 46%;
+  --accent: 240 5% 96%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 262 83% 58%;
+  --radius: 0.5rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0a0118;
+    --foreground: #f0e6ff;
   }
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, #0a0118 0%, #1e0a3c 50%, #0a0118 100%);
+  background-attachment: fixed;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.magic-card {
+  background: linear-gradient(to bottom right, rgb(88 28 135 / 0.5), rgb(157 23 77 / 0.5));
+  backdrop-filter: blur(4px);
+  border: 1px solid rgb(168 85 247 / 0.3);
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgb(168 85 247 / 0.2);
+}
+
+.magic-button {
+  background: linear-gradient(to right, rgb(147 51 234), rgb(236 72 153));
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s;
+  box-shadow: 0 10px 15px -3px rgb(168 85 247 / 0.5);
+}
+
+.magic-button:hover {
+  background: linear-gradient(to right, rgb(168 85 247), rgb(244 114 182));
+  box-shadow: 0 10px 15px -3px rgb(168 85 247 / 0.8);
+  transform: scale(1.05);
+}
+
+.magic-glow {
+  box-shadow: 0 0 20px var(--magic-glow), 0 0 40px var(--magic-glow);
+}
+
+.spell-text {
+  background: linear-gradient(to right, rgb(192 132 252), rgb(244 114 182), rgb(192 132 252));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 魔法粒子动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 代码编辑器样式 */
+.code-editor {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgb(168 85 247 / 0.3);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.5);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.7);
+}
+
+/* 确保代码块内的代码是白色 */
+pre code,
+pre code *,
+.prose pre code,
+.prose pre code * {
+  color: white !important;
+}
+
+/* Stack Auth 认证界面样式优化 */
+/* 认证容器基础样式 */
+.auth-container {
+  --auth-text-color: #e9d5ff;
+  --auth-label-color: #f3e8ff;
+  --auth-muted-color: #d8b4fe;
+}
+
+/* 优化表单标签颜色 - Email 和 Password */
+.stack-scope label,
+label.stack-scope,
+.auth-container label {
+  color: #f3e8ff !important; /* 更明亮的浅紫色 */
+  font-weight: 600 !important;
+}
+
+/* 优化分隔文本颜色 - "Or continue with" */
+.stack-scope .text-sm.text-zinc-500,
+.stack-scope div.text-zinc-500,
+.stack-scope .text-zinc-500,
+.auth-container .text-zinc-500,
+.auth-container .text-sm,
+div.text-zinc-500 {
+  color: #e9d5ff !important; /* 明亮的浅紫色 */
+  font-weight: 500 !important;
+}
+
+/* 针对灰色文本的通用优化 */
+.auth-container .text-gray-400,
+.auth-container .text-gray-500,
+.auth-container .text-gray-600,
+.stack-scope .text-gray-400,
+.stack-scope .text-gray-500,
+.stack-scope .text-gray-600 {
+  color: #d8b4fe !important;
+}
+
+/* 优化输入框样式 */
+.stack-scope input {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  color: #1e0a3c !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+  box-shadow: none !important; /* 移除长方形阴影 */
+}
+
+.stack-scope input:focus {
+  border-color: rgba(168, 85, 247, 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2) !important;
+}
+
+/* 确保输入框内的文字清晰显示 */
+.stack-scope input::placeholder {
+  color: rgba(30, 10, 60, 0.5) !important;
+}
+
+.stack-scope input[type="email"],
+.stack-scope input[type="password"],
+.stack-scope input[type="text"] {
+  color: #1e0a3c !important;
+  font-weight: 500 !important;
+}
+
+/* 优化按钮样式 */
+.stack-scope button[type="submit"] {
+  background: linear-gradient(to right, rgb(147 51 234), rgb(236 72 153)) !important;
+  color: white !important;
+  font-weight: bold !important;
+  transition: all 0.3s !important;
+}
+
+.stack-scope button[type="submit"]:hover {
+  background: linear-gradient(to right, rgb(168 85 247), rgb(244 114 182)) !important;
+  box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.8) !important;
+  transform: scale(1.02) !important;
+}
+
+/* 优化OAuth社交登录按钮 */
+.stack-scope button {
+  color: #f3e8ff !important; /* 明亮的浅紫色文字 */
+  font-weight: 600 !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  background: rgba(30, 10, 60, 0.3) !important; /* 半透明深紫色背景 */
+  transition: all 0.3s !important;
+}
+
+.stack-scope button:hover {
+  background: rgba(147, 51, 234, 0.4) !important;
+  border-color: rgba(168, 85, 247, 0.7) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* 优化链接颜色 */
+.stack-scope a {
+  color: #c084fc !important;
+}
+
+.stack-scope a:hover {
+  color: #e9d5ff !important;
 }
