@@ -7,6 +7,7 @@ import { StackProvider, StackTheme } from "@stackframe/stack";
 import { stackServerApp } from "@/stack";
 import ClientNavBar from '@/components/ClientNavBar';
 import { Suspense } from 'react';
+import Script from 'next/script';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,6 +24,12 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <body className={inter.className}>
+        {/* 加载 Pyodide */}
+        <Script 
+          src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"
+          strategy="beforeInteractive"
+        />
+        
         <StackProvider app={stackServerApp}>
           <StackTheme>
         {/* 导航栏 */}

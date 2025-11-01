@@ -6,7 +6,7 @@ import { recordExerciseCompletion, checkSpecialAchievements } from '@/lib/action
 const PISTON_API_URL = 'https://emkc.org/api/v2/piston';
 
 // 执行 Python 代码
-async function executePythonCode(code: string): Promise<{ stdout: string; stderr: string; success: boolean }> {
+async function executePythonCode(code: string, stdin: string = ''): Promise<{ stdout: string; stderr: string; success: boolean }> {
   try {
     const response = await fetch(`${PISTON_API_URL}/execute`, {
       method: 'POST',
@@ -22,7 +22,7 @@ async function executePythonCode(code: string): Promise<{ stdout: string; stderr
             content: code,
           },
         ],
-        stdin: '',
+        stdin: stdin,
         args: [],
         compile_timeout: 10000,
         run_timeout: 3000,
@@ -50,7 +50,7 @@ async function executePythonCode(code: string): Promise<{ stdout: string; stderr
 
 export async function POST(request: NextRequest) {
   try {
-    const { exerciseId, code, userId } = await request.json();
+    const { exerciseId, code, userId, stdin = '' } = await request.json();
 
     // 获取练习题信息
     const exercises = await sql`
@@ -73,13 +73,14 @@ export async function POST(request: NextRequest) {
       });
     }
 
+
     let passed = true;
     let output = '';
     let score = 0;
 
     try {
       // 使用 Piston API 执行真实的 Python 代码
-      const result = await executePythonCode(code);
+      const result = await executePythonCode(code, stdin);
 
       // 如果有标准错误输出，说明代码有问题
       if (result.stderr) {

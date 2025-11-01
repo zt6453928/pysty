@@ -73,6 +73,23 @@ body {
   transform: scale(1.05);
 }
 
+.magic-button-secondary {
+  background: rgba(88, 28, 135, 0.4);
+  color: rgb(192, 132, 252);
+  font-weight: 600;
+  border: 1px solid rgb(168, 85, 247, 0.5);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s;
+}
+
+.magic-button-secondary:hover {
+  background: rgba(88, 28, 135, 0.6);
+  border-color: rgb(168, 85, 247, 0.8);
+  color: rgb(224, 204, 252);
+  transform: translateY(-1px);
+}
+
 .magic-glow {
   box-shadow: 0 0 20px var(--magic-glow), 0 0 40px var(--magic-glow);
 }

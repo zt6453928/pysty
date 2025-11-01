@@ -1,7 +1,7 @@
 'use client';
 
 import Editor from '@monaco-editor/react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, CheckCircle, XCircle } from 'lucide-react';
 import MagicCard from './MagicCard';
 
@@ -17,32 +17,110 @@ export default function CodeEditor({ exerciseId, starterCode = '', userId, onSub
   const [output, setOutput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [testsPassed, setTestsPassed] = useState<boolean | null>(null);
+  const [pyodideReady, setPyodideReady] = useState(false);
+  const pyodideRef = useRef<any>(null);
+
+  // 加载 Pyodide
+  useEffect(() => {
+    const loadPyodide = async () => {
+      try {
+        // @ts-ignore
+        const pyodide = await window.loadPyodide({
+          indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
+        });
+        pyodideRef.current = pyodide;
+        setPyodideReady(true);
+      } catch (error) {
+        console.error('Pyodide 加载失败:', error);
+      }
+    };
+
+    loadPyodide();
+  }, []);
 
   const handleEditorChange = (value: string | undefined) => {
     setCode(value || '');
   };
 
   const runCode = async () => {
+    if (!pyodideReady || !pyodideRef.current) {
+      setOutput('❌ Python 运行环境正在加载中，请稍候...');
+      return;
+    }
+
     setIsRunning(true);
     setOutput('正在执行代码...');
     
     try {
-      // 调用API运行代码
-      const response = await fetch('/api/exercises/run', {
+      const pyodide = pyodideRef.current;
+
+      // 重定向 stdout
+      pyodide.runPython(`
+import sys
+from io import StringIO
+sys.stdout = StringIO()
+sys.stderr = StringIO()
+      `);
+
+      // 创建一个 JavaScript 函数用于 input
+      const jsInput = (prompt: string) => {
+        const userInput = window.prompt(prompt || '请输入:');
+        if (userInput === null) {
+          throw new Error('用户取消输入');
+        }
+        return userInput;
+      };
+
+      // 将 JavaScript 函数注入到 Python 全局命名空间
+      pyodide.globals.set('js_input', jsInput);
+
+      // 替换 Python 的 input 函数
+      pyodide.runPython(`
+import builtins
+builtins.input = js_input
+      `);
+
+      // 执行用户代码
+      await pyodide.runPythonAsync(code);
+
+      // 获取输出
+      const stdout = pyodide.runPython('sys.stdout.getvalue()');
+      const stderr = pyodide.runPython('sys.stderr.getvalue()');
+
+      if (stderr) {
+        setOutput('❌ 代码执行错误：\n\n' + stderr + '\n\n💡 提示：检查你的代码语法和逻辑');
+        setTestsPassed(false);
+      } else {
+        const finalOutput = '✅ 代码执行成功！\n\n📤 输出结果：\n' + (stdout || '(无输出)');
+        setOutput(finalOutput);
+        setTestsPassed(true);
+
+        // 调用后端 API 记录成绩
+        if (userId) {
+          try {
+            await fetch('/api/exercises/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ exerciseId, code, userId }),
-      });
-      
-      const result = await response.json();
-      setOutput(result.output);
-      setTestsPassed(result.passed);
+              body: JSON.stringify({ 
+                exerciseId, 
+                code, 
+                userId,
+                clientExecuted: true,
+                stdout: stdout || ''
+              }),
+            });
+          } catch (error) {
+            console.error('记录成绩失败:', error);
+          }
+        }
       
       if (onSubmit) {
-        onSubmit(code, result.passed, result.score);
+          onSubmit(code, true, 10); // 简化评分逻辑
+        }
       }
     } catch (error) {
-      setOutput('执行出错：' + (error as Error).message);
+      const errorMessage = (error as Error).message;
+      setOutput('❌ 执行出错：\n\n' + errorMessage);
       setTestsPassed(false);
     } finally {
       setIsRunning(false);
@@ -54,14 +132,22 @@ export default function CodeEditor({ exerciseId, starterCode = '', userId, onSub
       <MagicCard className="p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold spell-text">魔法代码编辑器</h3>
+          <div className="flex items-center gap-3">
+            {!pyodideReady && (
+              <span className="text-sm text-yellow-400">🔄 加载中...</span>
+            )}
+            {pyodideReady && (
+              <span className="text-sm text-green-400">✓ 就绪</span>
+            )}
           <button
             onClick={runCode}
-            disabled={isRunning}
+              disabled={isRunning || !pyodideReady}
             className="magic-button flex items-center gap-2 py-2 px-4"
           >
             <Play size={16} />
             {isRunning ? '施展魔法中...' : '运行代码'}
           </button>
+          </div>
         </div>
         
         <div className="code-editor">
